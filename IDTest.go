@@ -12,10 +12,6 @@ type ID struct {
 	Num int
 }
 
-func (id ID) gen(biztype string) {
-	kysdkid.NextId(biztype)
-}
-
 func (d *ID) Do() {
 	fmt.Println("开启线程数:", d.Num)
 	time.Sleep(1 * time.Second)
@@ -63,14 +59,15 @@ func main() {
 	//}()
 
 	//--
-	runTimes := 50000
+	runTimes := 5000
 
 	// Use the common pool.
 	var wg sync.WaitGroup
 	p, _ := ants.NewPoolWithFunc(1000, func(biztype interface{}) {
 		//myFunc(i)
 		t := biztype.(string)
-		kysdkid.NextId(t)
+		id, _ := kysdkid.NewIdGenerator().NextId(t)
+		fmt.Println(id)
 
 		wg.Done()
 	})
@@ -81,6 +78,7 @@ func main() {
 		wg.Add(1)
 		_ = p.Invoke(biztype)
 	}
+
 	wg.Wait()
 	fmt.Printf("running goroutines: %d\n", p.Running())
 
@@ -94,10 +92,7 @@ func main() {
 
 	costTime := endTime - startTime
 
-	fmt.Println(
-		"costTime is : ",
-		costTime,
-	)
+	fmt.Println("costTime is : ", costTime)
 
 	fmt.Println("end.")
 }
